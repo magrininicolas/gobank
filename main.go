@@ -1,7 +1,8 @@
 package main
 
-import "fmt"
+import "github.com/magrininicolas/gobank/api"
 
 func main() {
-	fmt.Println("Hello, World!")
+	server := api.NewApiServer(":3000")
+	server.Run()
 }
