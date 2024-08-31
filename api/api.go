@@ -39,14 +39,9 @@ func NewApiServer(listenAddr string) *APIServer {
 }
 
 func (s *APIServer) Run() {
-	router := initRouters(s)
+	r := initRouters(s)
 
 	log.Printf("JSON API server running on port: %s\n", s.listenAddr)
 
-	http.ListenAndServe(s.listenAddr, router)
-}
-
-func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
-	WriteJSON(w, http.StatusOK, JSONResponse{"message": "transfer completed", "amount": 3000})
-	return nil
+	http.ListenAndServe(s.listenAddr, r)
 }

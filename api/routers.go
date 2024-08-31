@@ -1,12 +1,17 @@
 package api
 
-import "github.com/gorilla/mux"
+import (
+	"github.com/go-chi/chi/v5"
+)
 
-func initRouters(s *APIServer) *mux.Router {
-	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/account", makeHttpHandleFunc(s.handleAccount))
-	router.HandleFunc("/account/{id}", makeHttpHandleFunc(s.handleGetAccount))
-	router.HandleFunc("/api/v1/account/transfer", makeHttpHandleFunc(s.handleTransfer))
-
-	return router
+func initRouters(s *APIServer) *chi.Mux {
+	r := chi.NewRouter()
+	r.Route("/api/v1/account", func(r chi.Router) {
+		r.Get("/{id}", makeHttpHandleFunc(s.handleGetAccount))
+		r.Post("/transfer", makeHttpHandleFunc(s.handleTransfer))
+		r.Post("/", makeHttpHandleFunc(s.handleCreateAccount))
+		r.Delete("/{id}", makeHttpHandleFunc(s.handleDeleteAccount))
+		r.Put("/{id}", makeHttpHandleFunc(s.handleUpdateAccount))
+	})
+	return r
 }
