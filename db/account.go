@@ -1,7 +1,10 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/magrininicolas/gobank/models"
 )
 
@@ -16,7 +19,6 @@ func (s *PostgresDB) createAccountTable() error {
 		created_at timestamp
 	);
 	`
-
 	_, err := s.dbx.Exec(query)
 	return err
 }
@@ -41,24 +43,29 @@ func (s *PostgresDB) UpdateAccount(*models.Account) error {
 }
 
 func (s *PostgresDB) GetAccountById(id uuid.UUID) (*models.Account, error) {
-	return nil, nil
+	row, err := s.dbx.Queryx("select * from account where id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	if row.Next() {
+		return scanIntoAccount(row)
+	}
+	return nil, fmt.Errorf("ACCOUNT WITH ID %v NOT FOUND", id)
 }
 
-func (s *PostgresDB) GetAccounts() ([]models.Account, error) {
-	rows, err := s.dbx.Query("SELECT * FROM account")
+func (s *PostgresDB) GetAccounts() ([]*models.Account, error) {
+	rows, err := s.dbx.Queryx("SELECT * FROM account")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	accs := []models.Account{}
+	accs := []*models.Account{}
 	for rows.Next() {
-		acc := models.Account{}
-		err := rows.Scan(&acc.ID, &acc.FirstName, &acc.LastName, &acc.AccNumber, &acc.Balance, &acc.CreatedAt)
+		acc, err := scanIntoAccount(rows)
 		if err != nil {
 			return nil, err
 		}
-
 		accs = append(accs, acc)
 	}
 
@@ -67,4 +74,13 @@ func (s *PostgresDB) GetAccounts() ([]models.Account, error) {
 	}
 
 	return accs, nil
+}
+
+func scanIntoAccount(rows *sqlx.Rows) (*models.Account, error) {
+	acc := &models.Account{}
+	err := rows.Scan(&acc.ID, &acc.FirstName, &acc.LastName, &acc.AccNumber, &acc.Balance, &acc.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return acc, nil
 }

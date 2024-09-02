@@ -1,0 +1,12 @@
+services:
+
+  db-postgres:
+    image: postgres:latest
+    restart: always
+    container_name: postgres_estudos
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DATABASE: gobank
+    ports: 
+      - "5432:5432"

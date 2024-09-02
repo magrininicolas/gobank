@@ -11,7 +11,7 @@ type Database interface {
 	CreateAccount(*models.Account) error
 	DeleteAccount(uuid.UUID) error
 	UpdateAccount(*models.Account) error
-	GetAccounts() ([]models.Account, error)
+	GetAccounts() ([]*models.Account, error)
 	GetAccountById(uuid.UUID) (*models.Account, error)
 }
 
@@ -20,7 +20,7 @@ type PostgresDB struct {
 }
 
 func NewPostgresDB() (*PostgresDB, error) {
-	connStr := "user=admin dbname=gobank_project password=1234 sslmode=disable"
+	connStr := "user=admin dbname=gobank password=1234 sslmode=disable"
 	db, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
 		return nil, err

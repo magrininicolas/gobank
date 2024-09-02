@@ -18,6 +18,13 @@ type CreateAccountResponse struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type GetAccountResponse struct {
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Balance   float64   `json:"balance"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 type Account struct {
 	ID        uuid.UUID `json:"id"`
 	FirstName string    `json:"firstName"`
@@ -34,5 +41,14 @@ func NewAccount(firstName, lastName string) *Account {
 		LastName:  lastName,
 		AccNumber: uuid.New(),
 		CreatedAt: time.Now().UTC(),
+	}
+}
+
+func FromAccToGetResponse(acc *Account) *GetAccountResponse {
+	return &GetAccountResponse{
+		FirstName: acc.FirstName,
+		LastName:  acc.LastName,
+		Balance:   acc.Balance,
+		CreatedAt: acc.CreatedAt,
 	}
 }

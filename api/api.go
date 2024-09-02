@@ -13,7 +13,9 @@ type apiFunc func(http.ResponseWriter, *http.Request) error
 type JSONResponse map[string]any
 
 type APIError struct {
-	Error string
+	StatusCode int
+	Status     string
+	Error      string
 }
 
 type APIServer struct {

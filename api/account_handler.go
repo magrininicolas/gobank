@@ -2,18 +2,44 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/magrininicolas/gobank/models"
 )
 
-func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	id := chi.URLParam(r, "id")
+func (s *APIServer) handleGetAccountById(w http.ResponseWriter, r *http.Request) error {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return err
+	}
+	acc, err := s.dbx.GetAccountById(id)
+	if err != nil {
+		return err
+	}
+	WriteJSON(w, http.StatusOK, models.FromAccToGetResponse(acc))
+	return err
+}
 
-	fmt.Println(id)
-	return WriteJSON(w, http.StatusOK, &models.Account{})
+func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) error {
+	accs, err := s.dbx.GetAccounts()
+	if err != nil {
+		WriteJSON(w, http.StatusBadRequest, &APIError{
+			StatusCode: http.StatusBadRequest,
+			Status:     "BAD REQUEST",
+			Error:      err.Error(),
+		})
+		return err
+	}
+
+	accsResp := []*models.GetAccountResponse{}
+	for _, v := range accs {
+		accsResp = append(accsResp, models.FromAccToGetResponse(v))
+	}
+	WriteJSON(w, http.StatusOK, accsResp)
+	return nil
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -33,10 +59,6 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		Balance:   acc.Balance,
 		CreatedAt: acc.CreatedAt,
 	})
-}
-
-func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) error {
-	return nil
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
