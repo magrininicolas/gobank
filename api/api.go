@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/magrininicolas/gobank/db"
 )
 
 type apiFunc func(http.ResponseWriter, *http.Request) error
@@ -16,6 +18,22 @@ type APIError struct {
 
 type APIServer struct {
 	listenAddr string
+	dbx        db.Database
+}
+
+func NewApiServer(listenAddr string, store db.Database) *APIServer {
+	return &APIServer{
+		listenAddr: listenAddr,
+		dbx:        store,
+	}
+}
+
+func (s *APIServer) Run() {
+	r := initRouters(s)
+
+	log.Printf("JSON API server running on port: %s\n", s.listenAddr)
+
+	http.ListenAndServe(s.listenAddr, r)
 }
 
 func makeHttpHandleFunc(f apiFunc) http.HandlerFunc {
@@ -30,18 +48,4 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
-}
-
-func NewApiServer(listenAddr string) *APIServer {
-	return &APIServer{
-		listenAddr: listenAddr,
-	}
-}
-
-func (s *APIServer) Run() {
-	r := initRouters(s)
-
-	log.Printf("JSON API server running on port: %s\n", s.listenAddr)
-
-	http.ListenAndServe(s.listenAddr, r)
 }
